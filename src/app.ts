@@ -1,16 +1,12 @@
-import express from 'express';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import express from "express";
+import authRoutes from "./routes/auth.route"; // Adjust the path if needed
 
 const app = express();
 
-// Middleware
+// Add this to parse JSON bodies
 app.use(express.json());
 
-// Routes
-app.get('/', (req, res) => {
-  res.send('API is running!');
-});
+// Use your auth routes
+app.use("/api/auth", authRoutes);
 
 export default app;
