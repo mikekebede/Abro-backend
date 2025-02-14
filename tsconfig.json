@@ -2,6 +2,7 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "es2020",                /* Modern JavaScript features for Node.js. */
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "module": "commonjs",              /* Node.js uses CommonJS module resolution. */
     "rootDir": "./src",                /* Source files folder. */
     "outDir": "./dist",                /* Compiled JavaScript output folder. */

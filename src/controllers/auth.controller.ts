@@ -3,6 +3,9 @@ import { RequestHandler } from "express";
 import User, { IUser } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { generateToken } from "../lib/utils";
+import { v2 as cloudinary } from "cloudinary";
+;
+
 
 export const registerUser: RequestHandler = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -114,3 +117,45 @@ export const logoutUser = (req: Request, res: Response)=> {
   res.status(500).json({ message: "An unexpected error occurred" });
 }
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { profilePic } = req.body;
+
+    if (!req.user || !("_id" in req.user)) {
+      res.status(401).json({ message: "Unauthorized - User not found" });
+      return;
+    }
+    const userId = (req.user as IUser)._id;
+    
+
+    if (!profilePic) {
+     res.status(400).json({ message: "Profile pic is required" });
+     return
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error in update profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+    return
+  }
+};
+
+export const checkAuth=(req: Request, res: Response)=>{
+  try {
+    res.status(200).json(req.user);
+    
+  } catch (error) {
+    console.log("Error in CheckAuth controller", error);
+    res.status(500).json({ message: "Internal server error" });
+    return
+  }
+}
