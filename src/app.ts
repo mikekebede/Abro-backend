@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./routes/auth.route"; // Adjust the path if needed
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const app = express();
 
@@ -8,6 +9,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // ✅ Ensures cookies are parsed correctly
+app.use(cors({
+    origin:"http://localhost:3000",
+    credentials:true
+}))
 
 // ✅ Use authentication routes
 app.use("/api/auth", authRoutes);
