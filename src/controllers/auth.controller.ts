@@ -102,20 +102,20 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export const logoutUser = (req: Request, res: Response)=> {
- try{
-  res.cookie("jwt", "", {maxAge:0})
-  res.status(200).json({message:"Logged out successfully"});
- }
- catch (error) {
-  if (error instanceof Error) {
-    console.error("Error in signup controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
-    return;
+export const logoutUser = (req: Request, res: Response) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 })
+    res.status(200).json({ message: "Logged out successfully" });
   }
+  catch (error) {
+    if (error instanceof Error) {
+      console.error("Error in signup controller:", error.message);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+      return;
+    }
 
-  res.status(500).json({ message: "An unexpected error occurred" });
-}
+    res.status(500).json({ message: "An unexpected error occurred" });
+  }
 };
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -127,13 +127,12 @@ export const updateProfile = async (req: Request, res: Response) => {
       return;
     }
     const userId = (req.user as IUser)._id;
-    
+
 
     if (!profilePic) {
-     res.status(400).json({ message: "Profile pic is required" });
-     return
+      res.status(400).json({ message: "Profile pic is required" });
+      return
     }
-
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -149,10 +148,45 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const checkAuth=(req: Request, res: Response)=>{
+export const updateUserInfo = async (req: Request, res: Response) => {
+  console.log("updateUserInfo called")
+  try {
+    // Destructure properties from the request body sent by the frontend
+    const { skills, description } = req.body;
+
+    if (!req.user || !("_id" in req.user)) {
+      res.status(401).json({ message: "Unauthorized - User not found" });
+      return;
+    }
+    const userId = (req.user as IUser)._id;
+
+    // Build update object; note that description is saved as shortDescription in the database
+    const updateData: {
+      skills?: string[];
+      shortDescription?: string;
+    } = {};
+
+    if (skills) {
+      updateData.skills = skills;
+    }
+    if (description) {
+      updateData.shortDescription = description;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true })
+      .select("-password");
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error in updateUserInfo:", error);
+    res.status(500).json({ message: "Internal server error" });
+    return;
+  }
+};
+export const checkAuth = (req: Request, res: Response) => {
   try {
     res.status(200).json(req.user);
-    
+
   } catch (error) {
     console.log("Error in CheckAuth controller", error);
     res.status(500).json({ message: "Internal server error" });
